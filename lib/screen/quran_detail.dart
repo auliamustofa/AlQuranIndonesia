@@ -13,44 +13,55 @@ class QuranDetail extends StatefulWidget {
 }
 
 class _QuranDetailState extends State<QuranDetail> {
-  int bottomIndex = 2;
+  int bottomIndex = 0;
   int offset = 0;
   int totalData = 0;
   int id;
   bool isPlay = false;
+  bool isPaused = false;
   AudioPlayer audioPlayer = AudioPlayer();
 
   void play() async {
     if (!isPlay) {
       final mp3URL = Provider.of<QuranAyat>(context, listen: false).findMp3Url(id);
-      int result = await audioPlayer.play(mp3URL);
+      int result =0;
+      if(!isPaused)
+        result = await audioPlayer.play(mp3URL);
+      else
+        result = await audioPlayer.resume();
       if (result == 1) {
         setState(() {
           isPlay = true;
         });
       }
     } else {
+      int result = await audioPlayer.pause();
+      if (result == 1) {
+        setState(() {
+          isPlay = false;
+          isPaused = true;
+        });
+      }
+    }
+  }
+  void stop() async {
+    if(isPlay || isPaused){
       int result = await audioPlayer.stop();
       if (result == 1) {
         setState(() {
           isPlay = false;
+          isPaused = false;
         });
       }
     }
   }
 
   void _changeBottomIndex(index) {
-    if (index == 1) {
+    if (index == 0) {
       play();
     }
-
-    final loadData = Provider.of<QuranAyat>(context, listen: false).items;
-    totalData = loadData.length > 0 ? loadData[loadData.length - 1].ayatNumber:0;
-
-    if (index == 0) {
-      offset -= totalData == offset ? (loadData.length * 2):loadData.length;
-    } else if (index == 2) {
-      offset += totalData == offset ? (loadData.length * 2):loadData.length;
+    if (index == 1){
+      stop();
     }
 
     setState(() {
@@ -81,7 +92,7 @@ class _QuranDetailState extends State<QuranDetail> {
           margin: const EdgeInsets.all(5),
           child: FutureBuilder(
             future:
-            Provider.of<QuranAyat>(context, listen: false).getDetail(id, bottomIndex, offset, totalData),
+            Provider.of<QuranAyat>(context, listen: false).getDetail(id),
             builder: (context, snapshot) {
               if (snapshot.connectionState == ConnectionState.waiting) {
                 return Center(
@@ -113,11 +124,9 @@ class _QuranDetailState extends State<QuranDetail> {
           currentIndex: bottomIndex,
           items: [
             BottomNavigationBarItem(
-                icon: Icon(Icons.arrow_left), title: Text('Previous')),
+                icon: Icon(isPlay ? Icons.pause:Icons.play_arrow), title: Text('${!isPlay ? "Play":"Pause"}')),
             BottomNavigationBarItem(
-                icon: Icon(isPlay ? Icons.stop:Icons.play_arrow), title: Text('${!isPlay ? "Play":"Stop"}')),
-            BottomNavigationBarItem(
-                icon: Icon(Icons.arrow_right), title: Text('Next')),
+                icon: Icon(Icons.stop), title: Text('Stop')),
           ],
           onTap: _changeBottomIndex,
         ));

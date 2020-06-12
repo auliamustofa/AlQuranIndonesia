@@ -55,8 +55,8 @@ class _QuranListState extends State<QuranList> {
       ),
       floatingActionButton: loadMore ? CircularProgressIndicator() : null,
       body: Container(
-        padding: const EdgeInsets.all(5),
-        margin: const EdgeInsets.all(5),
+//        padding: const EdgeInsets.all(5),
+//        margin: const EdgeInsets.all(5),
         child: firstLoad
             ? Center(
           child: CircularProgressIndicator(),
